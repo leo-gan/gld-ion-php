@@ -6,5 +6,5 @@ namespace Gld\Ion;
 
 final class Version
 {
-    public const NUMBER = '0.1.0';
+    public const NUMBER = '0.2.0';
 }

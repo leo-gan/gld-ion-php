@@ -148,5 +148,5 @@ truncated buffers, macros, `set_symbols`, and generated structs.
 
 The Composer package name is `leo-gan/gld-ion-php`. The PHP namespace is
 `Gld\Ion`. The public facade is `Gld\Ion\decode`, `encode`, `ion_eq`, and
-`docs_eq`. The generator binary is `gld-iongen-php`. Version `0.1.0` is
+`docs_eq`. The generator binary is `gld-iongen-php`. Version `0.2.0` is
 `composer.json` and `Gld\Ion\Version::NUMBER`. There is no conda package.
