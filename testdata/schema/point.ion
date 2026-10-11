@@ -1,0 +1,10 @@
+type::{
+  name: "Point",
+  type: struct,
+  content: closed,
+  fields: {
+    x: int,
+    y: {type: int, occurs: optional},
+    label: symbol
+  }
+}

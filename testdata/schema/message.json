@@ -1,0 +1,16 @@
+{
+  "title": "Message",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name"],
+  "properties": {
+    "id": {"type": "integer"},
+    "name": {"type": "string"},
+    "ok": {"type": "boolean"},
+    "weight": {"type": "number"},
+    "note": {"type": "string"},
+    "tags": {"type": "array", "items": {"type": "string"}},
+    "when": {"ionType": "timestamp"},
+    "payload": {"ionType": "blob"}
+  }
+}

@@ -30,6 +30,18 @@ Generator binary: `gld-iongen-php`.
 Requires **PHP 8.3** or newer. `bcmath` and `gmp` are not required. Integers
 and decimals use a small limb array inside the library.
 
+## Tests
+
+```bash
+php tests/run.php
+php benches/microbench.php
+php examples/encode_value.php
+```
+
+`php tests/run.php` prints `ok` when the local checks and the vendored ion-tests
+corpus pass. The design notes are in `DESIGN.md`. The Material site is built
+with `mkdocs build --strict`.
+
 ## What it reads and writes
 
 | Surface | Behavior |
