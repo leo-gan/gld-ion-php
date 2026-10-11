@@ -1,0 +1,63 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$paths = [
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../../autoload.php',
+];
+$loaded = false;
+foreach ($paths as $path) {
+    if (is_file($path)) {
+        require $path;
+        $loaded = true;
+        break;
+    }
+}
+if (!$loaded) {
+    spl_autoload_register(static function (string $class): void {
+        $prefix = 'Gld\\Ion\\';
+        if (!str_starts_with($class, $prefix)) {
+            return;
+        }
+        $rel = substr($class, strlen($prefix));
+        $file = dirname(__DIR__) . '/src/' . str_replace('\\', '/', $rel) . '.php';
+        if (is_file($file)) {
+            require $file;
+        }
+    });
+    require dirname(__DIR__) . '/src/functions.php';
+}
+
+use Gld\Ion\Codegen\Emit;
+use Gld\Ion\Schema\Schema;
+
+$schema = '';
+$out = '';
+$args = array_slice($argv, 1);
+for ($i = 0; $i < count($args); $i++) {
+    if ($args[$i] === '--schema' && isset($args[$i + 1])) {
+        $schema = $args[++$i];
+    } elseif ($args[$i] === '--out' && isset($args[$i + 1])) {
+        $out = $args[++$i];
+    } elseif ($args[$i] === '--help' || $args[$i] === '-h') {
+        fwrite(STDOUT, "gld-iongen-php --schema FILE --out DIR\n");
+        exit(0);
+    }
+}
+if ($schema === '' || $out === '') {
+    fwrite(STDERR, "gld-iongen-php --schema FILE --out DIR\n");
+    exit(2);
+}
+if (!is_dir($out) && !mkdir($out, 0777, true) && !is_dir($out)) {
+    fwrite(STDERR, "cannot create {$out}\n");
+    exit(1);
+}
+$doc = Schema::parseFile($schema);
+$files = Emit::all($doc);
+foreach ($files as $name => $source) {
+    $path = rtrim($out, '/') . '/' . $name . '.php';
+    file_put_contents($path, $source);
+    fwrite(STDOUT, "wrote {$path}\n");
+}

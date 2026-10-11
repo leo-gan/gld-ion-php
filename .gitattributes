@@ -1,0 +1,2 @@
+# Keep ion-tests bytes exactly, including CR LF records.
+testdata/ion-tests/** -text

@@ -1,0 +1,23 @@
+{
+  "name": "leo-gan/gld-ion-php",
+  "description": "From-scratch Amazon Ion 1.0 and 1.1 serializer for PHP",
+  "type": "library",
+  "license": "MIT",
+  "version": "0.1.0",
+  "require": {
+    "php": ">=8.3"
+  },
+  "bin": ["bin/gld-iongen-php"],
+  "autoload": {
+    "psr-4": {
+      "Gld\\Ion\\": "src/"
+    },
+    "files": ["src/functions.php"]
+  },
+  "authors": [
+    {
+      "name": "Leonid Ganeline",
+      "email": "leo.gan.57@gmail.com"
+    }
+  ]
+}
