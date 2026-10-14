@@ -1,6 +1,8 @@
 {
   "name": "leo-gan/gld-ion-php",
   "description": "From-scratch Amazon Ion 1.0 and 1.1 serializer for PHP",
+  "keywords": ["ion", "serialization"],
+  "homepage": "https://leo-gan.github.io/gld-ion-php/",
   "type": "library",
   "license": "MIT",
   "version": "0.2.0",
