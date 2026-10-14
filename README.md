@@ -33,8 +33,6 @@ After release `0.2.0` is on Packagist:
 composer require leo-gan/gld-ion-php
 ```
 
-Registration and the release workflow: [docs/publishing.md](docs/publishing.md).
-
 Requires **PHP 8.3** or newer. `bcmath` and `gmp` are not required. Integers
 and decimals use a small limb array inside the library.
 
