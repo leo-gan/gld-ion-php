@@ -4,6 +4,12 @@ These steps assume PHP 8.3 or newer. The Composer package name is
 `leo-gan/gld-ion-php`. The namespace is `Gld\Ion`. GMP and BCMath are not
 required.
 
+## Install
+
+```bash
+composer require leo-gan/gld-ion-php
+```
+
 ## Install from a checkout
 
 ```bash
