@@ -1,5 +1,7 @@
 # gld-ion-php
 
+[Serialization](https://leo-gan.github.io/serialization/) is the hub for the theory, the history, and the benchmarks.
+
 A from-scratch Amazon Ion implementation for PHP 8.3.
 The runtime and the code generator are written in PHP. They do not wrap, link,
 or vendor ion-c, ion-java, ion-rust, the Ion PECL extension, or any other
