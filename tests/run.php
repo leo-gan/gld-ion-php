@@ -288,6 +288,8 @@ try {
 }
 check($closed, 'closed schema');
 
+directValueChecks();
+
 // ion-tests corpus
 $catPath = $root . '/testdata/ion-tests/catalog/catalog.ion';
 $catDoc = decode((string) file_get_contents($catPath), new Catalog());
@@ -343,6 +345,145 @@ if ($fail !== 0) {
 }
 fwrite(STDOUT, "ok\n");
 exit(0);
+
+function directValueChecks(): void
+{
+    $samples = [
+        null,
+        true,
+        false,
+        0,
+        1,
+        -1,
+        255,
+        256,
+        -256,
+        16777216,
+        PHP_INT_MAX,
+        PHP_INT_MIN,
+        0.0,
+        -0.0,
+        1.5,
+        -2.25,
+        '',
+        'hi',
+        str_repeat('abc', 20),
+        [],
+        [0, 1, -4, 'z'],
+        ['f_bool' => true, 'f_int32' => 7, 'f_int64' => 99, 'f_float64' => 1.25, 'f_string' => 'ada', 'f_bool_2' => false, 'f_int32_2' => -3, 'f_string_2' => ''],
+        ['id' => 'd1', 'items' => [['sku' => 'a', 'qty' => 2, 'price_minor' => 50], ['sku' => 'bb', 'qty' => 0, 'price_minor' => -1]]],
+    ];
+    foreach ($samples as $i => $sample) {
+        $raw = \Gld\Ion\encode_value($sample);
+        check(directSame($sample, \Gld\Ion\decode_value($raw)), "direct round-trip {$i}");
+        $doc = decode($raw, new Catalog());
+        check(count($doc->top) === 1, "direct wire top {$i}");
+        if (count($doc->top) === 1) {
+            check(directSame($sample, directFromDoc($doc, $doc->top[0])), "direct wire decode {$i}");
+        }
+        $built = new IonDoc();
+        $built->add_top(directPut($built, $sample));
+        $legacy = encode($built, new EncodeOptions(true, false, 10), new Catalog());
+        check(directSame($sample, \Gld\Ion\decode_value($legacy)), "direct reads writer {$i}");
+    }
+}
+
+function directSame(mixed $a, mixed $b): bool
+{
+    if (is_array($a) || is_array($b)) {
+        if (!is_array($a) || !is_array($b) || count($a) !== count($b)) {
+            return false;
+        }
+        foreach ($a as $k => $v) {
+            if (!array_key_exists($k, $b) || !directSame($v, $b[$k])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    if (is_float($a) || is_float($b)) {
+        if (!is_float($a) || !is_float($b)) {
+            return false;
+        }
+        if ($a === 0.0 && $b === 0.0) {
+            return ((string) $a === (string) $b) || (pack('E', $a) === pack('E', $b));
+        }
+        return $a === $b;
+    }
+    return $a === $b;
+}
+
+function directFromDoc(IonDoc $doc, int $id): mixed
+{
+    $kind = $doc->nodes[$id]->kind;
+    if ($kind === Kind::NULL) {
+        return null;
+    }
+    if ($kind === Kind::BOOL) {
+        return $doc->as_bool($id);
+    }
+    if ($kind === Kind::INT) {
+        return $doc->as_i64($id);
+    }
+    if ($kind === Kind::FLOAT) {
+        return $doc->as_f64($id);
+    }
+    if ($kind === Kind::STRING) {
+        return $doc->as_string($id);
+    }
+    if ($kind === Kind::LIST) {
+        $n = $doc->nodes[$id]->nchild;
+        $out = [];
+        for ($i = 0; $i < $n; $i++) {
+            $out[] = directFromDoc($doc, $doc->child_at($id, $i));
+        }
+        return $out;
+    }
+    if ($kind === Kind::STRUCT) {
+        $n = $doc->nodes[$id]->nchild;
+        $out = [];
+        for ($i = 0; $i < $n; $i++) {
+            $out[$doc->field_name($id, $i)] = directFromDoc($doc, $doc->child_at($id, $i));
+        }
+        return $out;
+    }
+    throw new RuntimeException('direct kind ' . $kind);
+}
+
+function directPut(IonDoc $doc, mixed $value): int
+{
+    if ($value === null) {
+        return $doc->add_null(0);
+    }
+    if (is_bool($value)) {
+        return $doc->add_bool($value);
+    }
+    if (is_int($value)) {
+        return $doc->add_i64($value);
+    }
+    if (is_float($value)) {
+        return $doc->add_float(8, \Gld\Ion\FloatBits::f64($value));
+    }
+    if (is_string($value)) {
+        return $doc->add_string($value);
+    }
+    if (!is_array($value)) {
+        throw new RuntimeException('direct put');
+    }
+    if (array_is_list($value)) {
+        $list = $doc->start_container(Kind::LIST);
+        foreach ($value as $item) {
+            $doc->add_child($list, directPut($doc, $item), -1);
+        }
+        return $list;
+    }
+    $st = $doc->start_container(Kind::STRUCT);
+    foreach ($value as $key => $item) {
+        $sym = $doc->add_symbol_text((string) $key);
+        $doc->add_child($st, directPut($doc, $item), $doc->nodes[$sym]->a);
+    }
+    return $st;
+}
 
 function loadCatalog(IonDoc $doc): Catalog
 {

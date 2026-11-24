@@ -79,6 +79,18 @@ $raw = $msg->encode_to(new EncodeOptions(true, false, 10));
 $back = Message::decode_from($raw);
 ```
 
+A PHP scalar, list, or string-keyed struct can skip the document arena.
+`encode_value` writes one Ion 1.0 binary datagram. `decode_value` reads that
+datagram, and the same subset written by `encode`, back into PHP values.
+
+```php
+use function Gld\Ion\decode_value;
+use function Gld\Ion\encode_value;
+
+$raw = encode_value(['f_bool' => true, 'f_int32' => 7, 'name' => 'ada']);
+$back = decode_value($raw);
+```
+
 Optional fields use a `has_` flag. A missing flag omits the field. A closed
 schema raises `DecodeError::KIND_SCHEMA` when a required field is absent or an
 unknown field is present. `encoded_len` is `strlen` of `encode_to`.
