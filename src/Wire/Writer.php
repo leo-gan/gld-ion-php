@@ -858,7 +858,14 @@ final class Writer
                 $buf .= "\x40";
                 return;
             }
-            self::td($buf, 4, $doc->floats[$n->b]);
+            $width = $n->a;
+            $bits = $doc->floats[$n->b];
+            // floats[] is already the big-endian payload. Do not copy it into a second string.
+            if ($width < 14) {
+                $buf .= chr((4 << 4) | $width) . $bits;
+            } else {
+                self::td($buf, 4, $bits);
+            }
             return;
         }
         if ($k === Kind::DECIMAL) {
@@ -900,12 +907,13 @@ final class Writer
                 $buf .= "\x70";
                 return;
             }
+            if ($sid < 256) {
+                $buf .= "\x71" . chr($sid);
+                return;
+            }
             $tmp = '';
             $x = $sid;
             $be = '';
-            if ($x === 0) {
-                $be = "\0";
-            }
             while ($x > 0) {
                 $tmp .= chr($x & 255);
                 $x >>= 8;
